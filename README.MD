@@ -4,20 +4,20 @@
 [![Stack](https://img.shields.io/badge/stack-dbt%20%7C%20duckdb%20%7C%20streamlit-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
 
-> Uma plataforma de dados End-to-End simulando a operaÃ§Ã£o de um Banco Digital, o **LuisBank**, construÃ­da como camada analÃ­tica sobre o projeto transacional [Immutable Ledger](https://github.com/ricardoribs/immutable-ledger), cobrindo desde a ingestÃ£o de eventos financeiros atÃ© Analytics avanÃ§ado de CRM (RFM) e Compliance.
+> Plataforma de dados end-to-end que simula a operação de um banco digital, o **LuisBank**, construída como camada analítica sobre o projeto transacional [Immutable Ledger](https://github.com/ricardoribs/immutable-ledger), cobrindo desde a ingestão de eventos financeiros até analytics avançado de CRM (RFM) e compliance.
 
 ---
 
-## Arquitetura da SoluÃ§Ã£o
+## Arquitetura da Solução
 
-O projeto segue a arquitetura Modern Data Stack focada em alta performance local e baixo custo, utilizando processamento in-process (DuckDB).
+O projeto segue a arquitetura Modern Data Stack, focada em alta performance local e baixo custo, utilizando processamento in-process (DuckDB).
 
 ```mermaid
 graph LR
     A[Gerador Python] -->|JSONL| B((MinIO / S3));
     B -->|Bronze Layer| C{DuckDB};
     C -->|dbt Transformations| D[Data Warehouse];
-    D -->|Silver: DimensÃµes/Fatos| E[Gold: Aggregates];
+    D -->|Silver: Dimensões/Fatos| E[Gold: Aggregates];
     E -->|Analytics| F[Streamlit Dashboard];
     E -->|Marketing| G[RFM Segmentation];
 ```
@@ -26,22 +26,22 @@ graph LR
 
 ## Tech Stack
 
-| Componente     | Tecnologia                | FunÃ§Ã£o                                                               |
+| Componente     | Tecnologia                | Função                                                               |
 | -------------- | ------------------------- | -------------------------------------------------------------------- |
-| Ingestion      | Python (Faker, Pydantic)  | GeraÃ§Ã£o de dados sintÃ©ticos com integridade referencial e contratos. |
-| Data Lake      | MinIO (Docker)            | Armazenamento de objetos (S3 Compatible).                            |
-| Processing     | DuckDB                    | Motor OLAP de alta performance (Zero-Copy).                          |
+| Ingestion      | Python (Faker, Pydantic)  | Geração de dados sintéticos com integridade referencial e contratos. |
+| Data Lake      | MinIO (Docker)            | Armazenamento de objetos (S3 compatible).                            |
+| Processing     | DuckDB                    | Motor OLAP de alta performance (zero-copy).                          |
 | Transformation | dbt Core                  | Modelagem dimensional, testes de qualidade e linhagem.               |
-| Visualization  | Streamlit + Plotly        | Data App interativo para executivos e operaÃ§Ã£o.                      |
-| Orchestration  | Makefile / Github Actions | AutomaÃ§Ã£o de pipeline e CI/CD.                                       |
+| Visualization  | Streamlit + Plotly        | Data app interativo para executivos e operação.                      |
+| Orchestration  | Makefile / GitHub Actions | Automação de pipeline e CI/CD.                                       |
 
 ---
 
-## InteligÃªncia de NegÃ³cio (Business Logic)
+## Inteligência de Negócio (Business Logic)
 
-O projeto nÃ£o apenas processa dados, mas gera valor atravÃ©s de regras de negÃ³cio complexas:
+O projeto não apenas processa dados, mas gera valor por meio de regras de negócio complexas:
 
-### 1. SegmentaÃ§Ã£o RFM (Recency, Frequency, Monetary)
+### 1. Segmentação RFM (Recency, Frequency, Monetary)
 
 Algoritmo SQL (ntile) para classificar clientes em quintis.
 
@@ -49,21 +49,21 @@ Categorias: Champions, Loyal, Promising, At Risk, Hibernating.
 
 ### 2. Auditoria & Compliance
 
-Monitoramento de transaÃ§Ãµes acima de R$ 5k.
+Monitoramento de transações acima de R$ 5k.
 
-DetecÃ§Ã£o de outliers transacionais.
+Detecção de outliers transacionais.
 
 ### 3. Data Quality
 
-Testes de unicidade (unique) e nÃ£o-nulos (not_null).
+Testes de unicidade (unique) e não nulos (not_null).
 
-ValidaÃ§Ã£o de chaves estrangeiras entre Contas e TransaÃ§Ãµes.
+Validação de chaves estrangeiras entre contas e transações.
 
 ---
 
 ## Como Rodar Localmente
 
-### PrÃ©-requisitos
+### Pré-requisitos
 
 Docker & Docker Compose
 
@@ -71,15 +71,16 @@ Python 3.10+
 
 Git
 
-### Configuracao de Credenciais
+### Configuração de Credenciais
 
-1. Copie .env.example para .env
-2. Ajuste MINIO_ROOT_USER e MINIO_ROOT_PASSWORD
+1. Copie `.env.example` para `.env`
+2. Ajuste `MINIO_ROOT_USER` e `MINIO_ROOT_PASSWORD`
 
-> Aviso: faca rotacao periodica de credenciais e nunca versiona o arquivo .env.
+> Aviso: faça rotação periódica de credenciais e nunca versione o arquivo `.env`.
+
 ### Passo a Passo
 
-#### 1. Clone o repositÃ³rio
+#### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/ricardoribs/luisbank-data-platform.git
@@ -99,10 +100,10 @@ make setup
 make infra-up
 ```
 
-#### 4. Pipeline Completo (IngestÃ£o -> TransformaÃ§Ã£o)
+#### 4. Pipeline Completo (Ingestão -> Transformação)
 
 ```bash
-# Gera dados, sobe pro MinIO, roda dbt run e dbt test
+# Gera dados, sobe para o MinIO, roda dbt run e dbt test
 make pipeline
 ```
 
@@ -114,35 +115,36 @@ make dashboard
 
 Acesse em: [http://localhost:8501](http://localhost:8501)
 
-## Seguranca
+## Segurança
 
-- Credenciais sao lidas via variaveis de ambiente (.env).
+- Credenciais são lidas via variáveis de ambiente (`.env`).
 - Rotacione senhas regularmente e trate valores reais como secrets.
+
 ---
 
+## Documentação Técnica
 
-## Documentacao Tecnica
+- ADRs: `docs/adr/`
+- ERD: `docs/erd.md`
+- Runbook: `docs/runbook.md`
 
-- ADRs: docs/adr/
-- ERD: docs/erd.md
-- Runbook: docs/runbook.md
 ## Estrutura do Projeto
 
 ```
 luisbank-data-platform/
-â”œâ”€â”€ data/                  # Arquivos locais (DuckDB, JSONLs)
-â”œâ”€â”€ dbt_project/           # Projeto de TransformaÃ§Ã£o
-â”‚   â”œâ”€â”€ models/
-â”‚   â”‚   â”œâ”€â”€ staging/       # View em cima do Data Lake (Bronze)
-â”‚   â”‚   â”œâ”€â”€ marts/         # Tabela Fato e DimensÃµes (Silver/Gold)
-â”‚   â”‚   â””â”€â”€ marketing/     # SegmentaÃ§Ã£o RFM
-â”‚   â””â”€â”€ tests/             # Testes de qualidade de dados
-â”œâ”€â”€ infrastructure/        # Arquivos Docker/Terraform
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ generators/        # Scripts Python (Faker)
-â”‚   â””â”€â”€ dashboard/         # AplicaÃ§Ã£o Streamlit
-â”œâ”€â”€ Makefile               # AutomaÃ§Ã£o de comandos
-â””â”€â”€ docker-compose.yml     # Infraestrutura MinIO
+|-- data/                  # Arquivos locais (DuckDB, JSONLs)
+|-- dbt_project/           # Projeto de transformação
+|   |-- models/
+|   |   |-- staging/       # Views em cima do Data Lake (Bronze)
+|   |   |-- marts/         # Tabelas Fato e Dimensões (Silver/Gold)
+|   |   `-- marketing/     # Segmentação RFM
+|   `-- tests/             # Testes de qualidade de dados
+|-- infrastructure/        # Arquivos Docker/Terraform
+|-- src/
+|   |-- generators/        # Scripts Python (Faker)
+|   `-- dashboard/         # Aplicação Streamlit
+|-- Makefile               # Automação de comandos
+`-- docker-compose.yml     # Infraestrutura MinIO
 ```
 
 ---
@@ -150,13 +152,16 @@ luisbank-data-platform/
 ## Resultados Visuais
 
 ### 1. Dashboard Executivo (Streamlit)
-VisÃ£o consolidada de KPIs financeiros com cÃ¡lculo de deltas e tendÃªncias temporais.
+
+Visão consolidada de KPIs financeiros com cálculo de deltas e tendências temporais.
 ![Dashboard Overview](docs/dashboard_overview.png)
 
-### 2. SegmentaÃ§Ã£o Inteligente (RFM)
-AplicaÃ§Ã£o de lÃ³gica de negÃ³cio (SQL Window Functions) para classificar clientes em clusters (Champions, At Risk, etc) e gerar listas de aÃ§Ã£o para o Marketing.
+### 2. Segmentação Inteligente (RFM)
+
+Aplicação de lógica de negócio (SQL Window Functions) para classificar clientes em clusters (Champions, At Risk, etc.) e gerar listas de ação para o marketing.
 ![RFM Segmentation](docs/rfm_segmentation.png)
 
 ### 3. Engenharia & Linhagem (dbt)
-Pipeline de dados estruturado em camadas (Bronze, Silver, Gold) garantindo rastreabilidade e qualidade.
+
+Pipeline de dados estruturado em camadas (Bronze, Silver, Gold), garantindo rastreabilidade e qualidade.
 ![dbt Lineage](docs/dbt_lineage.png)
