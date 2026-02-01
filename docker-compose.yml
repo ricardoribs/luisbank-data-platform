@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Nosso S3 Local (Data Lake)
+  minio:
+    image: minio/minio
+    container_name: luisbank-datalake
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # Console Web
+    environment:
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "password123"
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./data/minio_data:/data
+    networks:
+      - luisbank-net
+
+  # Cliente para criar o bucket automaticamente (Opcional, mas útil)
+  mc:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 admin password123;
+      /usr/bin/mc mb myminio/landing-zone;
+      /usr/bin/mc mb myminio/bronze;
+      /usr/bin/mc mb myminio/silver;
+      /usr/bin/mc mb myminio/gold;
+      exit 0;
+      "
+    networks:
+      - luisbank-net
+
+networks:
+  luisbank-net:
+    driver: bridge

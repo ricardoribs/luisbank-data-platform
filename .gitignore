@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+
+# --- Dados (NUNCA suba dados reais ou binários pesados) ---
+data/*.jsonl
+data/*.duckdb
+data/*.parquet
+data/*.csv
+# Mantém a pasta data/ existindo, mas vazia (exceto pelo .gitkeep se criar um)
+!data/.gitkeep
+
+# --- dbt ---
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+dbt_project/dbt_modules/
+
+# --- IDEs e SO ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Logs Gerais ---
+*.log
