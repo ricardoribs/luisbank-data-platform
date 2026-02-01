@@ -71,6 +71,11 @@ jobs:
         cd dbt_project
         dbt deps --profiles-dir .
 
+    - name: dbt Run (staging + marts)
+      run: |
+        cd dbt_project
+        dbt run --profiles-dir .
+
     - name: dbt Snapshot
       run: |
         cd dbt_project
