@@ -1,10 +1,10 @@
-import streamlit as st
+﻿import streamlit as st
 import duckdb
 import pandas as pd
 import plotly.express as px
 from datetime import date, timedelta
 
-# --- 1. Configuração da Página ---
+# --- 1. ConfiguraÃ§Ã£o da PÃ¡gina ---
 st.set_page_config(
     page_title="LuisBank | Executive Dashboard",
     page_icon=None,
@@ -24,7 +24,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. Conexão Otimizada ---
+# --- 2. ConexÃ£o Otimizada ---
 DB_PATH = "data/luisbank.duckdb"
 
 @st.cache_data(ttl=300)
@@ -41,7 +41,7 @@ def get_data(query, params=None):
 
 # --- 3. Sidebar de Filtros ---
 with st.sidebar:
-    st.title("Parâmetros")
+    st.title("ParÃ¢metros")
     
     try:
         dates_df = get_data(
@@ -54,7 +54,7 @@ with st.sidebar:
         max_date = date.today()
 
     date_range = st.date_input(
-        "Período de Análise (Transacional)",
+        "PerÃ­odo de AnÃ¡lise (Transacional)",
         value=(max_date - timedelta(days=30), max_date),
         min_value=min_date,
         max_value=max_date
@@ -70,25 +70,24 @@ with st.sidebar:
     
     all_types = ["PIX_IN", "PIX_OUT", "TED_IN", "TED_OUT", "BOLETO_PAY"]
     tipo_transacao = st.multiselect(
-        "Tipo de Transação",
+        "Tipo de TransaÃ§Ã£o",
         all_types,
         default=all_types
     )
 
 # --- 4. Query Principal (Financeiro) ---
 if not tipo_transacao:
-    st.warning("Selecione um tipo de transação.")
+    st.warning("Selecione um tipo de transaÃ§Ã£o.")
     st.stop()
 
-formatted_types = ", ".join([f"'{x}'" for x in tipo_transacao])
-main_query = f"""
+main_query = """
     SELECT * FROM main.fct_transactions 
     WHERE cast(transaction_at as date) BETWEEN ? AND ?
-    AND transaction_type IN ({formatted_types})
+    AND transaction_type IN (SELECT * FROM UNNEST(?))
 """
-df_main = get_data(main_query, [start_date, end_date])
+df_main = get_data(main_query, [start_date, end_date, tipo_transacao])
 
-# --- 5. Lógica de KPIs ---
+# --- 5. LÃ³gica de KPIs ---
 total_vol = df_main['amount'].sum()
 total_txns = df_main.shape[0]
 avg_ticket = df_main['amount'].mean() if total_txns > 0 else 0
@@ -99,8 +98,8 @@ st.title("LuisBank Financial Overview")
 
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Volume Total", f"R$ {total_vol:,.2f}", "12.5%")
-c2.metric("Transações", f"{total_txns}", "-2.1%")
-c3.metric("Ticket Médio", f"R$ {avg_ticket:,.2f}")
+c2.metric("TransaÃ§Ãµes", f"{total_txns}", "-2.1%")
+c3.metric("Ticket MÃ©dio", f"R$ {avg_ticket:,.2f}")
 c4.metric(
     "Risco (>5k)",
     risk_txns,
@@ -111,8 +110,8 @@ c4.metric(
 st.markdown("---")
 
 tab1, tab2, tab3, tab4 = st.tabs([
-    "Visão Temporal",
-    "Composição",
+    "VisÃ£o Temporal",
+    "ComposiÃ§Ã£o",
     "Marketing & CRM",
     "Auditoria"
 ])
@@ -130,7 +129,7 @@ with tab1:
             daily_df,
             x='transaction_at',
             y='amount',
-            title="Tendência de Volume",
+            title="TendÃªncia de Volume",
             markers=True
         )
         fig.update_layout(
@@ -140,9 +139,9 @@ with tab1:
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.info("Sem dados no período.")
+        st.info("Sem dados no perÃ­odo.")
 
-# TAB 2: Composição
+# TAB 2: ComposiÃ§Ã£o
 with tab2:
     if not df_main.empty:
         col_a, col_b = st.columns(2)
@@ -158,7 +157,7 @@ with tab2:
                 y='transaction_type',
                 x='amount',
                 orientation='h',
-                title="Distribuição por Tipo",
+                title="DistribuiÃ§Ã£o por Tipo",
                 text_auto='.2s'
             )
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -168,15 +167,15 @@ with tab2:
                 x='transaction_at',
                 y='amount',
                 color='transaction_type',
-                title="Dispersão de Transações"
+                title="DispersÃ£o de TransaÃ§Ãµes"
             )
             st.plotly_chart(fig_scat, use_container_width=True)
     else:
-        st.info("Sem dados no período.")
+        st.info("Sem dados no perÃ­odo.")
 
 # TAB 3: Marketing & CRM
 with tab3:
-    st.subheader("Segmentação Inteligente (RFM)")
+    st.subheader("SegmentaÃ§Ã£o Inteligente (RFM)")
     
     try:
         rfm_query = """
@@ -208,7 +207,7 @@ with tab3:
             path=['customer_segment'],
             values='clientes',
             color='customer_segment',
-            title="Distribuição da Base de Clientes (RFM)"
+            title="DistribuiÃ§Ã£o da Base de Clientes (RFM)"
         )
         fig_tree.update_traces(
             textinfo="label+value+percent entry",
@@ -217,7 +216,7 @@ with tab3:
         )
         st.plotly_chart(fig_tree, use_container_width=True)
         
-        st.markdown("#### Ação Recomendada: Resgatar Clientes em Risco")
+        st.markdown("#### AÃ§Ã£o Recomendada: Resgatar Clientes em Risco")
         st.caption("Baixe a lista abaixo e envie para o time de Marketing.")
         
         risk_list_query = """
@@ -258,7 +257,7 @@ with tab3:
 # TAB 4: Auditoria
 with tab4:
     if not df_main.empty:
-        st.subheader("Auditoria de Transações")
+        st.subheader("Auditoria de TransaÃ§Ãµes")
         audit_df = (
             df_main[df_main['amount'] > 1000]
             .sort_values('amount', ascending=False)
@@ -270,4 +269,4 @@ with tab4:
             use_container_width=True
         )
     else:
-        st.info("Sem dados no período.")
+        st.info("Sem dados no perÃ­odo.")

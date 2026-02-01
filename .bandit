@@ -1,0 +1,2 @@
+﻿[bandit]
+exclude: src/generators

@@ -54,7 +54,7 @@ jobs:
         else
           safety scan --key "$SAFETY_API_KEY"
         fi
-        bandit -r src/
+        bandit -r src/ -c .bandit
 
     - name: Linting (Qualidade de Codigo)
       run: |
