@@ -1,2 +1,2 @@
-﻿[bandit]
-exclude: src/generators
+﻿exclude_dirs:
+  - src/generators
