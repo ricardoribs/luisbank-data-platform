@@ -48,7 +48,7 @@ jobs:
     - name: Security Scan
       run: |
         pip install safety bandit
-        safety check
+        safety scan
         bandit -r src/
 
     - name: Linting (Qualidade de Codigo)
