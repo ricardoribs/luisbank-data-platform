@@ -71,15 +71,20 @@ jobs:
         cd dbt_project
         dbt deps --profiles-dir .
 
-    - name: dbt Run (staging + marts)
+    - name: dbt Run (staging only)
       run: |
         cd dbt_project
-        dbt run --profiles-dir .
+        dbt run --profiles-dir . --select stg_accounts stg_customers stg_transactions
 
     - name: dbt Snapshot
       run: |
         cd dbt_project
         dbt snapshot --profiles-dir .
+
+    - name: dbt Run (marts)
+      run: |
+        cd dbt_project
+        dbt run --profiles-dir . --select dim_accounts dim_customers fct_transactions dm_rfm_segmentation
 
     - name: Validar SQL do dbt (Compile)
       run: |
