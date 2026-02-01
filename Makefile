@@ -1,43 +1,43 @@
-# Makefile - Automação do LuisBank Data Platform
+﻿# Makefile - Automacao do LuisBank Data Platform
 
 .PHONY: setup infra-up data-gen dbt-run dashboard all clean
 
-# 1. Configuração Inicial
+# 1. Configuracao Inicial
 setup:
-	@echo "📦 Instalando dependências..."
+	@echo "Instalando dependencias..."
 	pip install -r requirements.txt
-	@echo "✅ Dependências instaladas."
+	@echo "Dependencias instaladas."
 
 # 2. Subir Infraestrutura (MinIO)
 infra-up:
-	@echo "🏗️ Subindo Docker Containers..."
+	@echo "Subindo Docker Containers..."
 	docker-compose up -d
-	@echo "⏳ Aguardando MinIO iniciar (5s)..."
+	@echo "Aguardando MinIO iniciar (5s)..."
 	@timeout /t 5 >nul 2>&1 || sleep 5
-	@echo "✅ Infraestrutura pronta."
+	@echo "Infraestrutura pronta."
 
-# 3. Ingestão de Dados (Python)
+# 3. Ingestao de Dados (Python)
 data-gen:
-	@echo "💸 Gerando dados sintéticos (Clientes, Contas e Transações)..."
-	python src/generators/master_data.py
-	python src/generators/transaction_generator.py
-	@echo "✅ Dados gerados e enviados para o Data Lake."
+	@echo "Gerando dados sinteticos (Clientes, Contas e Transacoes)..."
+	python -m src.generators.master_data
+	python -m src.generators.transaction_generator
+	@echo "Dados gerados e enviados para o Data Lake."
 
-# 4. Transformação (dbt)
+# 4. Transformacao (dbt)
 dbt-run:
 	@echo "dbt Transformando dados (Bronze -> Silver -> Gold)..."
-	cd dbt_project && dbt deps --profiles-dir . && dbt run --profiles-dir . && dbt test --profiles-dir .
-	@echo "✅ Data Warehouse atualizado e testado."
+	cd dbt_project && dbt deps --profiles-dir . && dbt snapshot --profiles-dir . && dbt run --profiles-dir . && dbt test --profiles-dir .
+	@echo "Data Warehouse atualizado e testado."
 
-# 5. Visualização (Streamlit)
+# 5. Visualizacao (Streamlit)
 dashboard:
-	@echo "📊 Iniciando Dashboard..."
+	@echo "Iniciando Dashboard..."
 	streamlit run src/dashboard/app.py
 
 # --- COMANDO MESTRE ---
-# Roda TUDO de uma vez: Infra -> Geração -> Transformação -> Testes
+# Roda TUDO de uma vez: Infra -> Geracao -> Transformacao -> Testes
 pipeline: infra-up data-gen dbt-run
-	@echo "🚀 PIPELINE FINALIZADO COM SUCESSO! O LuisBank está atualizado."
+	@echo "PIPELINE FINALIZADO COM SUCESSO! O LuisBank esta atualizado."
 
 # Limpeza
 clean:

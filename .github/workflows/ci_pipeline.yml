@@ -1,4 +1,4 @@
-name: LuisBank CI Pipeline
+﻿name: LuisBank CI Pipeline
 
 on:
   push:
@@ -9,9 +9,15 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER || 'minioadmin' }}
+      MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD || 'minioadmin123' }}
+      MINIO_ENDPOINT: http://localhost:9000
+      MINIO_S3_ENDPOINT: localhost:9000
+      MINIO_BUCKET: landing-zone
 
     steps:
-    - name: Checkout código
+    - name: Checkout codigo
       uses: actions/checkout@v3
 
     - name: Setup Python
@@ -19,29 +25,58 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Instalar Dependências
+    - name: Instalar Dependencias
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install dbt-duckdb
 
-    - name: Linting (Qualidade de Código)
+    - name: Start MinIO (local)
       run: |
-        # Verifica se o código Python segue padrões PEP8
+        docker run -d --name minio \
+          -p 9000:9000 -p 9001:9001 \
+          -e MINIO_ROOT_USER=${MINIO_ROOT_USER} \
+          -e MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD} \
+          minio/minio server /data --console-address ":9001"
+        sleep 5
+
+    - name: Seed Data (Generators)
+      run: |
+        python -m src.generators.master_data
+        python -m src.generators.transaction_generator
+
+    - name: Security Scan
+      run: |
+        pip install safety bandit
+        safety check
+        bandit -r src/
+
+    - name: Linting (Qualidade de Codigo)
+      run: |
         pip install flake8
-        # Roda o linter na pasta src (ignora erros leves E501 linha longa)
         flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Testes (Pytest)
+      run: |
+        pytest -q
 
     - name: Setup dbt
       run: |
         cd dbt_project
         dbt deps --profiles-dir .
 
-    # Aqui num projeto real subiríamos um MinIO temporário (Service Container)
-    # ou usaríamos mocks. Para este exemplo, validamos a compilação do SQL.
-    
+    - name: dbt Snapshot
+      run: |
+        cd dbt_project
+        dbt snapshot --profiles-dir .
+
     - name: Validar SQL do dbt (Compile)
       run: |
         cd dbt_project
         dbt compile --profiles-dir .
+
+    - name: dbt Test Coverage
+      run: |
+        cd dbt_project
+        dbt test --profiles-dir . --fail-fast

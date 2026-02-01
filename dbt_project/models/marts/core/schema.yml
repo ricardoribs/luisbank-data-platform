@@ -1,21 +1,30 @@
-version: 2
+﻿version: 2
 
 models:
   - name: dim_customers
     description: "Tabela dimensional de clientes do LuisBank."
     columns:
       - name: customer_id
-        description: "Chave primária do cliente."
+        description: "Chave primaria do cliente."
         tests:
           - unique
           - not_null
       - name: risk_profile
         tests:
           - accepted_values:
-              values: ['LOW', 'MEDIUM', 'HIGH']
+              arguments:
+                values: ['LOW', 'MEDIUM', 'HIGH']
+      - name: valid_from
+        tests:
+          - not_null
+      - name: is_current
+        tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]
 
   - name: dim_accounts
-    description: "Tabela dimensional de contas bancárias."
+    description: "Tabela dimensional de contas bancarias."
     columns:
       - name: account_id
         tests:
@@ -27,16 +36,26 @@ models:
           - not_null
 
   - name: fct_transactions
-    description: "Tabela fato contendo todas as transações financeiras."
+    description: "Tabela fato contendo todas as transacoes financeiras."
     columns:
       - name: transaction_id
         tests:
           - unique
           - not_null
       - name: amount
-        description: "Valor da transação. Deve ser positivo."
-        # Teste customizado simples: checa se existe valor negativo (SQL direto)
+        description: "Valor da transacao. Deve ser positivo."
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+      - name: account_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_accounts')
+                field: account_id
       - name: transaction_type
         tests:
           - accepted_values:
-              values: ['PIX_IN', 'PIX_OUT', 'TED_IN', 'TED_OUT', 'BOLETO_PAY']
+              arguments:
+                values: ['PIX_IN', 'PIX_OUT', 'TED_IN', 'TED_OUT', 'BOLETO_PAY']

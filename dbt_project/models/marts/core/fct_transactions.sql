@@ -1,7 +1,12 @@
-{{ config(materialized='table') }}
+﻿{{ config(materialized='incremental', unique_key='transaction_id') }}
 
 with transactions as (
     select * from {{ ref('stg_transactions') }}
+    {% if is_incremental() %}
+        where transaction_at > (
+            select coalesce(max(transaction_at), timestamp '1900-01-01') from {{ this }}
+        )
+    {% endif %}
 ),
 
 accounts as (
@@ -11,14 +16,13 @@ accounts as (
 select
     t.transaction_id,
     t.account_id,
-    a.customer_id, -- Trazemos o customer_id para a fato para evitar joins desnecessários depois
+    a.customer_id,
     t.transaction_type,
     t.amount,
     t.counterparty_bank,
     t.status,
     t.transaction_at,
-    -- Colunas derivadas úteis para BI
-    case 
+    case
         when t.transaction_type in ('PIX_IN', 'TED_IN') then 'INFLOW'
         else 'OUTFLOW'
     end as movement_type

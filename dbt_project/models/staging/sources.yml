@@ -1,25 +1,35 @@
-version: 2
+﻿version: 2
 
 sources:
   - name: landing_zone
     schema: main
-    # Configuração específica do dbt-duckdb para ler de arquivos externos
     meta:
       external_location: "s3://landing-zone/{name}/*.jsonl"
-    
+
     tables:
       - name: customers
         description: "Arquivos JSONL de clientes"
-        # O plugin vai substituir {name} por 'customers' no caminho acima
         external:
-            location: "s3://landing-zone/customers/*.jsonl"
-      
+          location: "s3://landing-zone/customers/*.jsonl"
+        loaded_at_field: created_at
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 7, period: day}
+
       - name: accounts
         description: "Arquivos JSONL de contas"
         external:
-            location: "s3://landing-zone/accounts/*.jsonl"
+          location: "s3://landing-zone/accounts/*.jsonl"
+        loaded_at_field: created_at
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 7, period: day}
 
       - name: transactions
-        description: "Arquivos JSONL de transações"
+        description: "Arquivos JSONL de transacoes"
         external:
-            location: "s3://landing-zone/transactions/*.jsonl"
+          location: "s3://landing-zone/transactions/*.jsonl"
+        loaded_at_field: transaction_date
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 7, period: day}
