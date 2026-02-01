@@ -124,7 +124,7 @@ Acesse em: [http://localhost:8501](http://localhost:8501)
 
 ## Documentação Técnica
 
-- ADRs: `docs/adr/`
+- ADRs: `docs/adr/` (001-escolha-duckdb.md, 002-secrets-config.md)
 - ERD: `docs/erd.md`
 - Runbook: `docs/runbook.md`
 
